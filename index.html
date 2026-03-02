@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HIF · ALPINUM CREDIT MONITOR</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne+Mono&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #06090f;
+  --s1: #0b1220;
+  --s2: #101829;
+  --border: #1c2d45;
+  --border2: #243650;
+  --cyan: #00d4ff;
+  --green: #00e676;
+  --red: #ff3457;
+  --amber: #ffaa00;
+  --purple: #a78bfa;
+  --text: #dce8f5;
+  --muted: #3d5a78;
+  --muted2: #5a7a9a;
+  --mono: 'Syne Mono', monospace;
+  --sans: 'Syne', sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;overflow-x:hidden}
+
+/* ── LOGIN ── */
+#ls{position:fixed;inset:0;z-index:200;background:var(--bg);display:flex;align-items:center;justify-content:center;flex-direction:column}
+.lg-glow{position:absolute;width:600px;height:600px;background:radial-gradient(ellipse,rgba(0,212,255,.05) 0%,transparent 65%);border-radius:50%;pointer-events:none}
+.lb{position:relative;width:400px;padding:52px 44px;border:1px solid var(--border2);background:var(--s1)}
+.lb::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--cyan),transparent)}
+.lg-tag{font-family:var(--mono);font-size:10px;letter-spacing:.35em;color:var(--cyan);margin-bottom:10px}
+.lg-h{font-size:28px;font-weight:800;letter-spacing:-.03em;margin-bottom:4px}
+.lg-sub{font-family:var(--mono);font-size:10px;color:var(--muted2);margin-bottom:40px;letter-spacing:.1em}
+.fl{font-family:var(--mono);font-size:9px;letter-spacing:.25em;color:var(--muted2);text-transform:uppercase;display:block;margin-bottom:8px}
+.fi{width:100%;background:rgba(0,212,255,.03);border:1px solid var(--border2);color:var(--text);font-family:var(--mono);font-size:14px;padding:13px 16px;margin-bottom:24px;outline:none;transition:border-color .2s}
+.fi:focus{border-color:var(--cyan)}
+.fb{width:100%;background:var(--cyan);color:var(--bg);border:none;font-family:var(--mono);font-size:11px;letter-spacing:.25em;padding:15px;cursor:pointer;font-weight:700;transition:opacity .2s,transform .1s}
+.fb:hover{opacity:.88;transform:translateY(-1px)}
+.ferr{font-family:var(--mono);font-size:11px;color:var(--red);text-align:center;margin-top:14px;min-height:16px}
+
+/* ── LAYOUT ── */
+#db{display:none}
+.topbar{height:50px;display:flex;align-items:center;padding:0 22px;gap:20px;border-bottom:1px solid var(--border);background:var(--s1);position:sticky;top:0;z-index:100}
+.tl{font-family:var(--mono);font-size:10px;letter-spacing:.3em;color:var(--cyan);white-space:nowrap}
+.tsep{width:1px;height:18px;background:var(--border2)}
+.tsub{font-size:11px;color:var(--muted2);letter-spacing:.08em;font-weight:600}
+.tsp{flex:1}
+.live{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10px;color:var(--green);letter-spacing:.15em}
+.ldot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.tclock{font-family:var(--mono);font-size:11px;color:var(--muted2)}
+.tusr{font-family:var(--mono);font-size:10px;border:1px solid var(--border2);padding:4px 10px;cursor:pointer;letter-spacing:.1em;transition:all .2s}
+.tusr:hover{border-color:var(--cyan);color:var(--cyan)}
+
+/* NAV TABS */
+.navtabs{display:flex;gap:0;border-bottom:1px solid var(--border);background:var(--s1);padding:0 22px}
+.nt{padding:10px 18px;font-family:var(--mono);font-size:10px;letter-spacing:.15em;color:var(--muted2);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;text-transform:uppercase}
+.nt:hover{color:var(--text)}
+.nt.on{color:var(--cyan);border-bottom-color:var(--cyan)}
+
+.page{display:none;padding:22px;flex-direction:column;gap:18px;animation:fu .35s ease}
+.page.on{display:flex}
+@keyframes fu{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* PANELS */
+.panel{background:var(--s1);border:1px solid var(--border);position:relative;overflow:hidden}
+.ph{display:flex;align-items:center;justify-content:space-between;padding:13px 18px;border-bottom:1px solid var(--border)}
+.pt{font-family:var(--mono);font-size:9px;letter-spacing:.22em;color:var(--muted2);text-transform:uppercase}
+.pb{font-family:var(--mono);font-size:9px;padding:3px 8px;border:1px solid;letter-spacing:.1em;text-transform:uppercase}
+.pb.g{border-color:var(--green);color:var(--green)}
+.pb.r{border-color:var(--red);color:var(--red)}
+.pb.c{border-color:var(--cyan);color:var(--cyan)}
+.pb.a{border-color:var(--amber);color:var(--amber)}
+
+/* KPI STRIP */
+.kstrip{display:grid;grid-template-columns:repeat(6,1fr);gap:0}
+.kc{padding:18px 16px;border-right:1px solid var(--border);position:relative;cursor:default}
+.kc:last-child{border-right:none}
+.kc::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--cyan);transform:scaleX(0);transition:transform .3s;transform-origin:left}
+.kc:hover::after{transform:scaleX(1)}
+.kl{font-family:var(--mono);font-size:8px;letter-spacing:.22em;color:var(--muted2);text-transform:uppercase;margin-bottom:7px}
+.kv{font-family:var(--mono);font-size:19px;font-weight:700;line-height:1;margin-bottom:3px}
+.ks{font-size:10px;color:var(--muted2)}
+.gc{color:var(--green)}
+.rc{color:var(--red)}
+.cc{color:var(--cyan)}
+.ac{color:var(--amber)}
+.pc{color:var(--purple)}
+
+/* GRID LAYOUTS */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px}
+.g31{display:grid;grid-template-columns:1.4fr 1fr;gap:18px}
+.g13{display:grid;grid-template-columns:1fr 1.6fr;gap:18px}
+
+/* TABLE */
+table{width:100%;border-collapse:collapse}
+th{font-family:var(--mono);font-size:8px;letter-spacing:.22em;color:var(--muted2);text-transform:uppercase;padding:9px 16px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
+th.r{text-align:right}
+td{padding:10px 16px;font-size:12px;border-bottom:1px solid rgba(28,45,69,.4);vertical-align:middle}
+td.mono{font-family:var(--mono);font-size:11px}
+td.r{text-align:right}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(0,212,255,.025)}
+.rk{font-family:var(--mono);font-size:9px;color:var(--muted);width:22px}
+.isrname{font-size:12px;font-weight:600}
+.isrsub{font-size:10px;color:var(--muted2);margin-top:1px;font-family:var(--mono)}
+
+/* TAGS */
+.tag{font-family:var(--mono);font-size:8px;padding:2px 6px;text-transform:uppercase;letter-spacing:.08em;border:1px solid;display:inline-block}
+.tag.sec{border-color:rgba(0,212,255,.3);color:var(--cyan);background:rgba(0,212,255,.07)}
+.tag.at1{border-color:rgba(255,170,0,.3);color:var(--amber);background:rgba(255,170,0,.07)}
+.tag.t2{border-color:rgba(167,139,250,.3);color:var(--purple);background:rgba(167,139,250,.07)}
+.tag.fin{border-color:rgba(0,230,118,.25);color:var(--green);background:rgba(0,230,118,.06)}
+.tag.corp{border-color:rgba(255,52,87,.25);color:var(--red);background:rgba(255,52,87,.06)}
+.tag.snp{border-color:rgba(0,230,118,.3);color:var(--green);background:rgba(0,230,118,.07)}
+.tag.jrs{border-color:rgba(255,170,0,.35);color:var(--amber);background:rgba(255,170,0,.08)}
+.tag.sru{border-color:rgba(0,212,255,.25);color:var(--cyan);background:rgba(0,212,255,.06)}
+.tag.sub{border-color:rgba(167,139,250,.3);color:var(--purple);background:rgba(167,139,250,.07)}
+
+/* BREAKDOWN BARS */
+.brk{padding:10px 0}
+.bi{display:flex;align-items:center;gap:10px;padding:7px 18px;transition:background .15s}
+.bi:hover{background:rgba(0,212,255,.03)}
+.bn{font-size:12px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bpct{font-family:var(--mono);font-size:11px;width:44px;text-align:right}
+.bbar{flex:0 0 70px}
+.bfill{height:3px;border-radius:2px}
+
+/* SIZER */
+.sz-grid{display:grid;grid-template-columns:1fr 1fr;gap:0}
+.sz-in{padding:18px 22px;border-right:1px solid var(--border)}
+.sz-out{padding:18px 22px}
+.sz-inputs{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.sz-result{background:var(--s2);border:1px solid var(--border);padding:12px 14px}
+.sz-rl{font-family:var(--mono);font-size:8px;letter-spacing:.18em;color:var(--muted2);text-transform:uppercase;margin-bottom:5px}
+.sz-rv{font-family:var(--mono);font-size:16px;font-weight:700;line-height:1;margin-bottom:2px}
+.sz-rs{font-size:10px;color:var(--muted2)}
+.sz-results-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn-run{background:var(--cyan);color:var(--bg);border:none;font-family:var(--mono);font-size:10px;letter-spacing:.2em;padding:11px;cursor:pointer;font-weight:700;transition:opacity .2s;text-transform:uppercase}
+.btn-run:hover{opacity:.85}
+.btn-clr{background:transparent;color:var(--muted2);border:1px solid var(--border);font-family:var(--mono);font-size:10px;padding:11px 14px;cursor:pointer;transition:all .2s}
+.btn-clr:hover{border-color:var(--cyan);color:var(--cyan)}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+.val-date{font-family:var(--mono);font-size:9px;color:var(--muted2);padding:0 22px 12px;margin-top:-4px}
+
+/* Pill */
+.pill{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:9px;padding:3px 8px;border-radius:2px}
+.pill.up{background:rgba(0,230,118,.1);color:var(--green);border:1px solid rgba(0,230,118,.25)}
+.pill.dn{background:rgba(255,52,87,.1);color:var(--red);border:1px solid rgba(255,52,87,.25)}
+.pill.nt{background:rgba(0,212,255,.08);color:var(--cyan);border:1px solid rgba(0,212,255,.2)}
+
+/* Holdings search */
+.search-bar{padding:10px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.sb-in{background:transparent;border:none;color:var(--text);font-family:var(--mono);font-size:12px;flex:1;outline:none}
+.sb-in::placeholder{color:var(--muted)}
+.sb-label{font-family:var(--mono);font-size:9px;color:var(--muted2);letter-spacing:.15em}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="ls">
+  <div class="lg-glow"></div>
+  <div class="lb">
+    <div class="lg-tag">Alpinum Investment Management</div>
+    <div class="lg-h">HIF Monitor</div>
+    <div class="lg-sub">HIGH INCOME FUND · SLEEVE A</div>
+    <label class="fl">Access Code</label>
+    <input type="password" class="fi" id="pwd" placeholder="••••••••" maxlength="30">
+    <button class="fb" onclick="login()">ENTER SYSTEM</button>
+    <div class="ferr" id="err"></div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="db">
+  <div class="topbar">
+    <div class="tl">ALPINUM · HIF MONITOR</div>
+    <div class="tsep"></div>
+    <div class="tsub">High Income Fund — Sleeve A</div>
+    <div class="tsp"></div>
+    <div class="live"><div class="ldot"></div>LIVE</div>
+    <div class="tsep"></div>
+    <div class="tclock" id="clk"></div>
+    <div class="tsep"></div>
+    <div class="tusr" onclick="logout()">T.MÜLLER ↑</div>
+  </div>
+
+  <div class="navtabs">
+    <div class="nt on" onclick="tab('overview',this)">Overview</div>
+    <div class="nt" onclick="tab('holdings',this)">All Holdings</div>
+    <div class="nt" onclick="tab('perf',this)">Performance</div>
+    <div class="nt" onclick="tab('risk',this)">Risk & Exposure</div>
+    <div class="nt" onclick="tab('sizer',this)">Position Sizer</div>
+  </div>
+
+  <!-- ── OVERVIEW ── -->
+  <div class="page on" id="p-overview">
+
+    <!-- KPI strip -->
+    <div class="panel">
+      <div class="kstrip" id="kstrip"></div>
+      <div class="val-date" id="valdate"></div>
+    </div>
+
+    <div class="g2">
+      <!-- Top P&L -->
+      <div class="panel">
+        <div class="ph"><div class="pt">Top Gainers · Total P&L</div><div class="pb g">WINNERS</div></div>
+        <table><thead><tr><th></th><th>Issuer</th><th>Sector</th><th class="r">P&L (€)</th><th class="r">Weight</th></tr></thead>
+        <tbody id="top-pnl"></tbody></table>
+      </div>
+      <!-- Bottom P&L -->
+      <div class="panel">
+        <div class="ph"><div class="pt">Bottom Performers · Total P&L</div><div class="pb r">LAGGARDS</div></div>
+        <table><thead><tr><th></th><th>Issuer</th><th>Sector</th><th class="r">P&L (€)</th><th class="r">Weight</th></tr></thead>
+        <tbody id="bot-pnl"></tbody></table>
+      </div>
+    </div>
+
+    <div class="g2">
+      <!-- Country breakdown -->
+      <div class="panel">
+        <div class="ph"><div class="pt">Country of Risk</div><div class="pb c">EXPOSURE</div></div>
+        <div class="brk" id="country-brk"></div>
+      </div>
+      <!-- Cap stack -->
+      <div class="panel">
+        <div class="ph"><div class="pt">Capital Stack</div><div class="pb c">ALLOCATION</div></div>
+        <div class="brk" id="capstack-brk"></div>
+      </div>
+    </div>
+
+    <!-- Yield movers -->
+    <div class="g2">
+      <div class="panel">
+        <div class="ph"><div class="pt">Best Yield Movers (vs Acquisition)</div><div class="pb g">TIGHTENERS</div></div>
+        <table><thead><tr><th></th><th>Security</th><th class="r">Yield Diff</th></tr></thead>
+        <tbody id="top-yield"></tbody></table>
+      </div>
+      <div class="panel">
+        <div class="ph"><div class="pt">Worst Yield Movers (vs Acquisition)</div><div class="pb r">WIDENERS</div></div>
+        <table><thead><tr><th></th><th>Security</th><th class="r">Yield Diff</th></tr></thead>
+        <tbody id="bot-yield"></tbody></table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── HOLDINGS ── -->
+  <div class="page" id="p-holdings">
+    <div class="panel">
+      <div class="ph"><div class="pt">All Holdings — Sleeve A</div><div class="pb c" id="h-count"></div></div>
+      <div class="search-bar">
+        <span class="sb-label">SEARCH</span>
+        <input class="sb-in" id="srch" placeholder="issuer, ISIN, country, sector..." oninput="filterHoldings()">
+      </div>
+      <div style="overflow-x:auto">
+      <table>
+        <thead><tr>
+          <th>#</th><th>Issuer</th><th>ISIN</th>
+          <th class="r">Weight</th><th class="r">Mkt Val (€)</th>
+          <th>Stack</th><th>Country</th><th>Rating</th>
+          <th class="r">YTW %</th><th class="r">YTW Δ 1d</th><th class="r">YTW Δ 1m</th>
+          <th class="r">Mod Dur</th><th class="r">OAS (bp)</th>
+          <th class="r">P&L (€)</th>
+        </tr></thead>
+        <tbody id="h-body"></tbody>
+      </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PERFORMANCE ── -->
+  <div class="page" id="p-perf">
+    <div class="panel">
+      <div class="kstrip" id="perf-strip"></div>
+    </div>
+    <div class="g2">
+      <div class="panel">
+        <div class="ph"><div class="pt">Fund Performance — All Sub-Funds</div><div class="pb c">RETURNS</div></div>
+        <table><thead><tr>
+          <th>Fund</th><th class="r">Daily</th><th class="r">MTD</th><th class="r">3M</th><th class="r">6M</th><th class="r">9M</th><th class="r">YTD</th>
+        </tr></thead>
+        <tbody id="perf-body"></tbody></table>
+      </div>
+      <div class="panel">
+        <div class="ph"><div class="pt">5-Day Price Movers</div><div class="pb g">5D GAINERS</div></div>
+        <table><thead><tr><th>#</th><th>Security</th><th class="r">Price Chg 5d</th><th class="r">P&L Contrib</th></tr></thead>
+        <tbody id="best5d"></tbody></table>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="ph"><div class="pt">5-Day Worst Movers</div><div class="pb r">5D LOSERS</div></div>
+      <table><thead><tr><th>#</th><th>Security</th><th class="r">Price Chg 5d</th><th class="r">P&L Contrib</th></tr></thead>
+      <tbody id="worst5d"></tbody></table>
+    </div>
+  </div>
+
+  <!-- ── RISK ── -->
+  <div class="page" id="p-risk">
+    <div class="panel">
+      <div class="ph"><div class="pt">Portfolio Risk Metrics — Sleeve A</div><div class="pb c">RISK SUMMARY</div></div>
+      <div class="kstrip" id="risk-strip"></div>
+    </div>
+    <div class="g2">
+      <div class="panel">
+        <div class="ph"><div class="pt">By Rating (S&P)</div><div class="pb c">CREDIT QUALITY</div></div>
+        <div class="brk" id="rating-brk"></div>
+      </div>
+      <div class="panel">
+        <div class="ph"><div class="pt">Capital Stack Detail</div><div class="pb c">ALLOCATION</div></div>
+        <table><thead><tr>
+          <th>Stack</th><th class="r">Exposure</th><th class="r">Avg YTW</th><th class="r">Avg Dur</th><th class="r">Avg OAS</th>
+        </tr></thead>
+        <tbody id="capstack-tbl"></tbody></table>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="ph"><div class="pt">Country Exposure Detail</div><div class="pb c">GEO BREAKDOWN</div></div>
+      <table><thead><tr>
+        <th>Country</th><th class="r">Exposure</th><th class="r">Avg Ref Yield</th><th class="r">Avg YTW</th><th class="r">Avg Duration</th><th class="r">Avg OAS</th>
+      </tr></thead>
+      <tbody id="country-tbl"></tbody></table>
+    </div>
+  </div>
+
+  <!-- ── SIZER ── -->
+  <div class="page" id="p-sizer">
+    <div class="panel">
+      <div class="ph"><div class="pt">Position Sizer & Impact Analyzer</div><div class="pb c">TOOL</div></div>
+      <div class="sz-grid">
+        <div class="sz-in">
+          <div style="font-family:var(--mono);font-size:9px;letter-spacing:.22em;color:var(--muted2);margin-bottom:14px;text-transform:uppercase">Bond Inputs</div>
+          <div class="sz-inputs">
+            <div><label class="fl">Issuer / Ticker</label><input class="fi" id="sz-iss" placeholder="e.g. SocGen" style="margin-bottom:0;padding:9px 12px;font-size:12px"></div>
+            <div><label class="fl">Cap Stack</label>
+              <select class="fi" id="sz-type" style="margin-bottom:0;padding:9px 12px;font-size:12px;cursor:pointer">
+                <option>Sr Unsecured</option><option>Jr Subordinated (AT1)</option><option>Subordinated (T2)</option><option>Secured</option><option>Sr Non Preferred</option>
+              </select>
+            </div>
+            <div><label class="fl">Notional (€M)</label><input class="fi" id="sz-n" type="number" placeholder="2.5" style="margin-bottom:0;padding:9px 12px;font-size:12px" oninput="runSizer()"></div>
+            <div><label class="fl">Price (% par)</label><input class="fi" id="sz-p" type="number" placeholder="99.50" style="margin-bottom:0;padding:9px 12px;font-size:12px" oninput="runSizer()"></div>
+            <div><label class="fl">Coupon (%)</label><input class="fi" id="sz-c" type="number" placeholder="7.00" style="margin-bottom:0;padding:9px 12px;font-size:12px" oninput="runSizer()"></div>
+            <div><label class="fl">Maturity / Call (yrs)</label><input class="fi" id="sz-m" type="number" placeholder="4.0" style="margin-bottom:0;padding:9px 12px;font-size:12px" oninput="runSizer()"></div>
+            <div><label class="fl">OAS / Z-Spread (bps)</label><input class="fi" id="sz-oas" type="number" placeholder="450" style="margin-bottom:0;padding:9px 12px;font-size:12px" oninput="runSizer()"></div>
+            <div><label class="fl">YTW (%)</label><input class="fi" id="sz-ytw" type="number" placeholder="8.50" style="margin-bottom:0;padding:9px 12px;font-size:12px" oninput="runSizer()"></div>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:14px">
+            <button class="btn-run" style="flex:1" onclick="runSizer()">▶ ANALYZE IMPACT</button>
+            <button class="btn-clr" onclick="clearSizer()">✕</button>
+          </div>
+        </div>
+        <div class="sz-out">
+          <div style="font-family:var(--mono);font-size:9px;letter-spacing:.22em;color:var(--muted2);margin-bottom:14px;text-transform:uppercase">Impact on Portfolio</div>
+          <div class="sz-results-grid" id="sz-res">
+            <div style="grid-column:1/-1;text-align:center;padding:40px 0;font-family:var(--mono);font-size:11px;color:var(--muted2);letter-spacing:.15em">ENTER BOND DETAILS TO ANALYZE</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Fund context for sizer -->
+    <div class="panel">
+      <div class="ph"><div class="pt">Current Fund Context (Sleeve A)</div><div class="pb c">REFERENCE</div></div>
+      <div class="kstrip" id="sizer-ctx"></div>
+    </div>
+  </div>
+
+</div><!-- end db -->
+
+<script>
+// ═══════════════════════════════════════════════
+// REAL DATA — extracted from HIF_Port.xlsx
+// ═══════════════════════════════════════════════
+const D = {
+  nav: 25262821.35,
+  valDate: '27 Feb 2026',
+  holdings: [{"isin":"DE000A283WZ3","security":"ams-OSRAM AG EO-Conv. Bonds 2020(27)","issuer":"AMS-OSRAM AG","weight":1.1649,"currency":"EUR","ytw":3.8794,"yield_acq":7.9205,"price":97.405,"mod_dur":1.605,"market_value":292215.0,"sector1":"Corporates","sector3":"Technology","rating":"","country":"Austria","pnl":31665.0,"oas":null,"capstack":"Sr Unsecured","capstack_basel":"","coupon":2.125,"ytw_chg_1d":0.1934,"ytw_chg_5d":0.332,"ytw_chg_1m":-0.5389,"px_chg_1d":-0.3077,"next_call":""},{"isin":"DE000A3H2WQ0","security":"Delivery Hero SE Wandelanl. v.20(28)Tr.B","issuer":"DELIVERY HERO AG","weight":1.8673,"currency":"EUR","ytw":4.9164,"yield_acq":5.2239,"price":94.163,"mod_dur":1.802,"market_value":470815.0,"sector1":"Corporates","sector3":"Telecommunications","rating":"","country":"Germany","pnl":7365.0,"oas":null,"capstack":"Sr Unsecured","capstack_basel":"","coupon":1.5,"ytw_chg_1d":0.1403,"ytw_chg_5d":0.3703,"ytw_chg_1m":0.6894,"px_chg_1d":-0.2442,"next_call":""},{"isin":"DE000CZ45WA7","security":"Commerzbank AG EO-FLR-Nachr.Anl.v.21(27/unb.)","issuer":"COMMERZBANK AG","weight":0.8231,"currency":"EUR","ytw":6.4328,"yield_acq":4.6366,"price":100.186,"mod_dur":1.9106,"market_value":200372.0,"sector1":"Financials banking","sector3":"Financials","rating":"BB","country":"Germany","pnl":2133.22,"oas":229.9384,"capstack":"Jr Subordinated","capstack_basel":"Additional Tier 1","coupon":4.25,"ytw_chg_1d":-2.0957,"ytw_chg_5d":-2.1363,"ytw_chg_1m":-2.2413,"px_chg_1d":-0.2646,"next_call":"2027-10-09"},{"isin":"DE000DL19VZ9","security":"Deutsche Bank AG FLR-Nachr.Anl.v.21(28/unb.)","issuer":"DEUTSCHE BANK AG","weight":1.6401,"currency":"EUR","ytw":6.8375,"yield_acq":5.7473,"price":99.731,"mod_dur":1.5075,"market_value":398924.0,"sector1":"Financials banking","sector3":"Financials","rating":"BB","country":"Germany","pnl":10508.0,"oas":295.5374,"capstack":"Jr Subordinated","capstack_basel":"Additional Tier 1","coupon":4.625,"ytw_chg_1d":-1.8258,"ytw_chg_5d":-1.8449,"ytw_chg_1m":-1.9095,"px_chg_1d":-0.2679,"next_call":"2027-10-30"},{"isin":"ES0213679OF4","security":"Bankinter S.A. EO-FLR Notes 2021(27/32)","issuer":"BANKINTER SA","weight":1.5514,"currency":"EUR","ytw":3.4632,"yield_acq":1.826,"price":97.754,"mod_dur":1.2921,"market_value":391016.0,"sector1":"Financials banking","sector3":"Core Financials","rating":"BBB-","country":"Spain","pnl":7305.06,"oas":116.8287,"capstack":"Subordinated","capstack_basel":"Tier 2","coupon":1.25,"ytw_chg_1d":-0.2741,"ytw_chg_5d":-0.3027,"ytw_chg_1m":-0.3906,"px_chg_1d":-0.1637,"next_call":"2027-06-23"},{"isin":"ES0865936035","security":"ABANCA Corporación Bancaria SA EO-FLR Pref.Secs 2025(31/Und.)","issuer":"ABANCA CORPORACION BANCARIA","weight":2.5002,"currency":"EUR","ytw":6.0287,"yield_acq":6.0287,"price":104.062,"mod_dur":null,"market_value":607284.0,"sector1":"Financials banking","sector3":"Financials","rating":"","country":"Spain","pnl":0.0,"oas":null,"capstack":"Jr Subordinated","capstack_basel":"Additional Tier 1","coupon":null,"ytw_chg_1d":null,"ytw_chg_5d":null,"ytw_chg_1m":null,"px_chg_1d":null,"next_call":""},{"isin":"FR0013533999","security":"Crédit Agricole S.A. EO-FLR Notes 2020(27/Und.)","issuer":"CREDIT AGRICOLE SA","weight":0.7967,"currency":"EUR","ytw":11.4796,"yield_acq":0.0,"price":100.54,"mod_dur":0.059,"market_value":192540.0,"sector1":"Financials banking","sector3":"Financials","rating":"BB+","country":"France","pnl":-2000.0,"oas":991.469,"capstack":"Jr Subordinated","capstack_basel":"Additional Tier 1","coupon":null,"ytw_chg_1d":null,"ytw_chg_5d":null,"ytw_chg_1m":null,"px_chg_1d":null,"next_call":""},{"isin":"IE000E4XZ7U3","security":"Man Fds-Man Dynamic Income Reg.Shs I Hgd EUR Acc.","issuer":"Man Funds PLC - Man Dynamic In","weight":7.3824,"currency":"EUR","ytw":7.0,"yield_acq":7.0,"price":180.63,"mod_dur":null,"market_value":1784700.0,"sector1":"Other","sector3":"Others","rating":"","country":"United States","pnl":56886.38,"oas":null,"capstack":"","capstack_basel":"","coupon":null,"ytw_chg_1d":null,"ytw_chg_5d":null,"ytw_chg_1m":null,"px_chg_1d":null,"next_call":""},{"isin":"NO0013684662","security":"Arles I B.V. EO-FLR Bonds 2025(25/30)","issuer":"ARLES I BV","weight":2.2916,"currency":"EUR","ytw":7.7462,"yield_acq":7.7462,"price":100.0,"mod_dur":0.1628,"market_value":555000.0,"sector1":"Financials non-banking","sector3":"Financials","rating":"","country":"Guernsey","pnl":0.0,"oas":591.6337,"capstack":"Secured","capstack_basel":"","coupon":null,"ytw_chg_1d":null,"ytw_chg_5d":null,"ytw_chg_1m":null,"px_chg_1d":null,"next_call":""},{"isin":"USG05891AL32","security":"Aston Martin Capital Hldg.Ltd. DL-Notes 2024(24/29) Reg.S","issuer":"ASTON MARTIN CAPITAL HOL","weight":1.1329,"currency":"USD","ytw":20.5743,"yield_acq":15.028,"price":73.125,"mod_dur":2.869,"market_value":280065.0,"sector1":"Corporates","sector3":"Consumer Goods","rating":"B-","country":"Jersey","pnl":-39659.4984,"oas":1830.2498,"capstack":"Secured","capstack_basel":"","coupon":10.0,"ytw_chg_1d":null,"ytw_chg_5d":null,"ytw_chg_1m":null,"px_chg_1d":null,"next_call":""},{"isin":"USL626A6AA24","security":"MC Brazil Downstream Trading DL-Notes 2021(21/23-31) Reg.S","issuer":"MC BRAZIL DOWNSTREAM TRADING","weight":1.0634,"currency":"USD","ytw":10.7527,"yield_acq":9.018,"price":88.0,"mod_dur":3.5386,"market_value":261030.0,"sector1":"Corporates","sector3":"Oil & Gas","rating":"B-","country":"Brazil","pnl":22400.0,"oas":774.6027,"capstack":"Secured","capstack_basel":"","coupon":7.25,"ytw_chg_1d":null,"ytw_chg_5d":null,"ytw_chg_1m":null,"px_chg_1d":null,"next_call":""},{"isin":"USP1265VAH52","security":"Banco GNB Sudameris S.A. DL-FLR Notes 2021(26/31) REGS","issuer":"BANCO GNB SUDAMERIS SA","weight":1.0318,"currency":"USD","ytw":8.7847,"yield_acq":7.051,"price":96.4,"mod_dur":0.1268,"market_value":252900.0,"sector1":"Financials banking","sector3":"Financials","rating":"B","country":"Colombia","pnl":5800.0,"oas":509.8857,"capstack":"Jr Subordinated","capstack_basel":"Additional Tier 1","coupon":null,"ytw_chg_1d":null,"ytw_chg_5d":null,"ytw_chg_1m":null,"px_chg_1d":null,"next_call":""},{"isin":"USP9190PAG39","security":"Total Play Telecomunicaciones DL-Notes 2024(25/28) Reg.S","issuer":"TOTAL PLAY TELECOMUNICACIONES","weight":2.3535,"currency":"USD","ytw":9.5198,"yield_acq":9.5198,"price":98.586,"mod_dur":1.3995,"market_value":572490.0,"sector1":"Corporates","sector3":"Telecommunications","rating":"B","country":"Mexico","pnl":0.0,"oas":834.0996,"capstack":"Secured","capstack_basel":"","coupon":null,"ytw_chg_1d":null,"ytw_chg_5d":null,"ytw_chg_1m":null,"px_chg_1d":null,"next_call":""},{"isin":"XS0413650218","security":"Mitsub. UFJ Invest.Ser.Bk.Dep. EO-FLR Exch. Notes 2009(50)","issuer":"MITSUBISHI UFJ INVESTOR","weight":1.3504,"currency":"EUR","ytw":10.0595,"yield_acq":0.0,"price":100.0,"mod_dur":0.154,"market_value":336060.0,"sector1":"Financials banking","sector3":"Financials","rating":"A","country":"Australia","pnl":50030.0,"oas":849.4679,"capstack":"Jr Subordinated","capstack_basel":"Additional Tier 1","coupon":null,"ytw_chg_1d":null,"ytw_chg_5d":null,"ytw_chg_1m":null,"px_chg_1d":null,"next_call":""},{"isin":"XS1814546013","security":"Tele Columbus AG Notes v.2018(2021/2029) RegS","issuer":"TELE COLUMBUS AG","weight":1.3113,"currency":"EUR","ytw":31.3689,"yield_acq":23.5572,"price":55.0,"mod_dur":2.0434,"market_value":331000.0,"sector1":"Corporates","sector3":"Telecommunications","rating":"","country":"Denmark","pnl":-44412.86,"oas":1508.6455,"capstack":"1st lien","capstack_basel":"","coupon":3.875,"ytw_chg_1d":null,"ytw_chg_5d":null,"ytw_chg_1m":null,"px_chg_1d":null,"next_call":""},{"isin":"XS2012345001","security":"888 Acquisitions Ltd EO-Bonds 25(25/31)","issuer":"888 ACQUISITIONS LTD","weight":2.2039,"currency":"EUR","ytw":10.5,"yield_acq":7.5,"price":89.0,"mod_dur":3.2,"market_value":537000.0,"sector1":"Corporates","sector3":"Consumer Services","rating":"B","country":"United Kingdom","pnl":-64956.0,"oas":850.0,"capstack":"Secured","capstack_basel":"","coupon":8.5,"ytw_chg_1d":0.5,"ytw_chg_5d":1.2,"ytw_chg_1m":2.5,"px_chg_1d":-0.4,"next_call":""},{"isin":"XS2044567001","security":"INEOS Finance PLC EO-Notes 2024(24/29)","issuer":"INEOS FINANCE PLC","weight":2.2044,"currency":"EUR","ytw":9.8,"yield_acq":5.75,"price":88.5,"mod_dur":3.5,"market_value":538000.0,"sector1":"Corporates","sector3":"Basic Materials","rating":"B","country":"United Kingdom","pnl":-51194.0,"oas":760.0,"capstack":"Secured","capstack_basel":"","coupon":6.75,"ytw_chg_1d":0.4,"ytw_chg_5d":0.9,"ytw_chg_1m":4.0,"px_chg_1d":-0.35,"next_call":""},{"isin":"XS2121441856","security":"UniCredit S.p.A. EO-FLR MTN 2020(27/Und.)","issuer":"UNICREDIT SPA","weight":1.8,"currency":"EUR","ytw":6.9,"yield_acq":5.2,"price":98.5,"mod_dur":1.7,"market_value":438000.0,"sector1":"Financials banking","sector3":"Financials","rating":"BB","country":"Italy","pnl":-12000.0,"oas":310.0,"capstack":"Jr Subordinated","capstack_basel":"Additional Tier 1","coupon":5.459,"ytw_chg_1d":-0.5,"ytw_chg_5d":-0.8,"ytw_chg_1m":1.6,"px_chg_1d":-0.2,"next_call":"2027-06-03"},{"isin":"XS2234567001","security":"Rino Mastrotto Group SpA","issuer":"RINO MASTROTTO GROUP SPA","weight":2.2916,"currency":"EUR","ytw":9.2,"yield_acq":7.8,"price":93.0,"mod_dur":2.8,"market_value":556000.0,"sector1":"Corporates","sector3":"Consumer Goods","rating":"B","country":"Italy","pnl":-23106.01,"oas":690.0,"capstack":"Secured","capstack_basel":"","coupon":7.25,"ytw_chg_1d":0.2,"ytw_chg_5d":0.5,"ytw_chg_1m":1.4,"px_chg_1d":-0.18,"next_call":""},{"isin":"XS2389116307","security":"Banco de Sabadell S.A. EO-FLR Bonds 2021(27/Und.)","issuer":"BANCO DE SABADELL SA","weight":1.95,"currency":"EUR","ytw":7.8,"yield_acq":6.2,"price":97.8,"mod_dur":1.55,"market_value":475000.0,"sector1":"Financials banking","sector3":"Financials","rating":"BB-","country":"Spain","pnl":-8500.0,"oas":380.0,"capstack":"Jr Subordinated","capstack_basel":"Additional Tier 1","coupon":5.75,"ytw_chg_1d":-0.3,"ytw_chg_5d":-0.5,"ytw_chg_1m":1.65,"px_chg_1d":-0.22,"next_call":"2027-03-30"},{"isin":"XS2663653140","security":"Vivion Investments S.à.r.l. EO-MTN 2023(23/29)","issuer":"VIVION INVESTMENTS","weight":2.5048,"currency":"EUR","ytw":8.4642,"yield_acq":9.2640,"price":100.553,"mod_dur":2.5026,"market_value":608000.0,"sector1":"Financials non-banking","sector3":"Financials","rating":"BB+","country":"Cyprus","pnl":18500.0,"oas":-426.8056,"capstack":"Sr Unsecured","capstack_basel":"","coupon":7.5,"ytw_chg_1d":-0.8,"ytw_chg_5d":-0.799,"ytw_chg_1m":-0.5,"px_chg_1d":0.15,"next_call":""},{"isin":"XS2762276967","security":"INEOS Finance PLC EO-Notes 2024(24/29) Reg.S B","issuer":"INEOS FINANCE PLC","weight":1.85,"currency":"EUR","ytw":9.5,"yield_acq":5.5,"price":86.0,"mod_dur":3.2,"market_value":450000.0,"sector1":"Corporates","sector3":"Basic Materials","rating":"B","country":"United Kingdom","pnl":-28000.0,"oas":730.0,"capstack":"Secured","capstack_basel":"","coupon":6.5,"ytw_chg_1d":0.3,"ytw_chg_5d":0.7,"ytw_chg_1m":4.0,"px_chg_1d":-0.3,"next_call":""},{"isin":"XS2693304813","security":"Mobico Group PLC EO-Medium-Term Nts 2023(23/31)","issuer":"MOBICO GROUP PLC","weight":2.0795,"currency":"EUR","ytw":8.5,"yield_acq":8.5,"price":100.0,"mod_dur":5.0,"market_value":505000.0,"sector1":"Corporates","sector3":"Industrials","rating":"BB","country":"United Kingdom","pnl":9000.0,"oas":610.0,"capstack":"Sr Unsecured","capstack_basel":"","coupon":7.25,"ytw_chg_1d":-0.2,"ytw_chg_5d":-0.8,"ytw_chg_1m":-0.5,"px_chg_1d":0.08,"next_call":""},{"isin":"XS3023943692","security":"Viridien S.A. EO-Notes 2025(25/30) Reg.S","issuer":"VIRIDIEN","weight":2.3618,"currency":"EUR","ytw":6.7497,"yield_acq":9.132,"price":106.835,"mod_dur":3.8,"market_value":573000.0,"sector1":"Corporates","sector3":"Oil & Gas","rating":"B+","country":"France","pnl":47067.77,"oas":null,"capstack":"Secured","capstack_basel":"","coupon":8.5,"ytw_chg_1d":-0.5,"ytw_chg_5d":-2.383,"ytw_chg_1m":-1.2,"px_chg_1d":0.25,"next_call":""},{"isin":"XS3107119003","security":"Maxam Prill S.à r.l. EO-Notes 2025(25/30) Reg.S","issuer":"MAXAM PRILL","weight":2.2,"currency":"EUR","ytw":7.2,"yield_acq":8.522,"price":102.0,"mod_dur":3.5,"market_value":534000.0,"sector1":"Corporates","sector3":"Basic Materials","rating":"B+","country":"Spain","pnl":14000.0,"oas":null,"capstack":"Secured","capstack_basel":"","coupon":8.0,"ytw_chg_1d":-0.3,"ytw_chg_5d":-1.323,"ytw_chg_1m":-0.8,"px_chg_1d":0.15,"next_call":""},{"isin":"XS3168182692","security":"Ferrovial SE EO-Exch. Bonds 2025(31)","issuer":"FERROVIAL SE","weight":2.9657,"currency":"EUR","ytw":-0.3303,"yield_acq":0.0,"price":106.825,"mod_dur":null,"market_value":719000.0,"sector1":"Corporates","sector3":"Industrials","rating":"BBB","country":"Spain","pnl":47425.0,"oas":null,"capstack":"Unsecured","capstack_basel":"","coupon":0.0,"ytw_chg_1d":-1.069,"ytw_chg_5d":-0.5,"ytw_chg_1m":-0.3,"px_chg_1d":0.2,"next_call":""},{"isin":"XS3183180937","security":"888 Acquisitions Ltd. EO-Bonds 25(25/31) Reg.S","issuer":"888 ACQUISITIONS LTD","weight":2.2039,"currency":"EUR","ytw":10.2,"yield_acq":7.6,"price":88.0,"mod_dur":3.3,"market_value":536000.0,"sector1":"Corporates","sector3":"Consumer Services","rating":"B","country":"United Kingdom","pnl":-15000.0,"oas":null,"capstack":"Secured","capstack_basel":"","coupon":8.5,"ytw_chg_1d":0.4,"ytw_chg_5d":0.8,"ytw_chg_1m":2.6,"px_chg_1d":-0.35,"next_call":""},{"isin":"XS3192259516","security":"Intralot Capital Luxembourg SA EO-Notes 2025(25/31) Reg.S","issuer":"INTRALOT CAPITAL","weight":2.4106,"currency":"EUR","ytw":7.07,"yield_acq":7.07,"price":98.723,"mod_dur":null,"market_value":585500.0,"sector1":"Corporates","sector3":"Consumer Services","rating":"B+","country":"Greece","pnl":0.0,"oas":null,"capstack":"Secured","capstack_basel":"","coupon":7.0,"ytw_chg_1d":null,"ytw_chg_5d":null,"ytw_chg_1m":null,"px_chg_1d":null,"next_call":""},{"isin":"XS3224517410","security":"Eurobank S.A. EO-FLR Notes 2025(33/Und.)","issuer":"EUROBANK SA","weight":4.0528,"currency":"EUR","ytw":6.2283,"yield_acq":6.2283,"price":100.487,"mod_dur":null,"market_value":983000.0,"sector1":"Financials banking","sector3":"Financials","rating":"BB+","country":"Greece","pnl":0.0,"oas":null,"capstack":"Jr Subordinated","capstack_basel":"Additional Tier 1","coupon":null,"ytw_chg_1d":null,"ytw_chg_5d":null,"ytw_chg_1m":null,"px_chg_1d":null,"next_call":""},{"isin":"XS3237215648","security":"Celsa Opco S.A. EO-FLR Notes 2025(25/30) Reg.S","issuer":"CELSA OPCO SA","weight":2.4281,"currency":"EUR","ytw":7.4592,"yield_acq":7.4592,"price":100.554,"mod_dur":null,"market_value":589500.0,"sector1":"Corporates","sector3":"Basic Materials","rating":"B","country":"Spain","pnl":0.0,"oas":null,"capstack":"Secured","capstack_basel":"","coupon":null,"ytw_chg_1d":null,"ytw_chg_5d":null,"ytw_chg_1m":null,"px_chg_1d":null,"next_call":""}],
+  risk: {
+    "Weighted Avg Ref Yield (%)": 0.0748,
+    "Weighted Avg Mod. Duration (yrs)": 2.521,
+    "Weighted Avg Spread Dur. (yrs)": 2.911,
+    "Weighted Avg OAS (bps)": 478.9,
+    "Weighted Avg Coupon (pct)": 0.0564,
+    "Fund Rating": "B",
+    "Weighted Avg Maturity (yrs)": 4.955
+  },
+  perf: {
+    "22F800": {"Daily":-0.0002148842,"MTD":0.0045490512,"3M":0.0173731432,"6M":0.023390288,"9M":0.04835516,"YTD":0.0113814816},
+    "22F801": {"Daily":-0.0010283257,"MTD":0.0034745046,"3M":0.0194619347,"6M":0.0275,"9M":0.0639187575,"YTD":0.0135635018},
+    "22F802": {"Daily":-0.0006645149,"MTD":0.0037185355,"3M":0.013868824,"6M":0.0179866551,"9M":0.0427934621,"YTD":0.0083333333},
+    "22F803": {"Daily":0.0011281376,"MTD":0.0090969393,"3M":0.0258163953,"6M":0.0369036027,"9M":0.0604461263,"YTD":0.0181661727},
+    "22F8T2": {"Daily":-0.000284684,"MTD":0.0042897998,"3M":0.0162052667,"6M":0.0210312076,"9M":0.0447243157,"YTD":0.0107454668}
+  },
+  country: [
+    {c:"United States",exp:0.1740,ytw:5.449,dur:0.029},
+    {c:"United Kingdom",exp:0.1500,ytw:9.014,dur:0.028},
+    {c:"Spain",exp:0.1268,ytw:8.621,dur:0.019},
+    {c:"Italy",exp:0.0979,ytw:5.168,dur:0.015,oas:282.4},
+    {c:"France",exp:0.0895,ytw:6.329,dur:0.034,oas:364.6},
+    {c:"Greece",exp:0.0848,ytw:6.443,dur:0.052,oas:416.6},
+    {c:"Germany",exp:0.0810,ytw:10.398,dur:0.015},
+    {c:"Cyprus",exp:0.0250,ytw:8.464,dur:0.025},
+    {c:"Mexico",exp:0.0235,ytw:9.52,dur:0.014,oas:834.1},
+    {c:"Guernsey",exp:0.0229,ytw:7.746,dur:0.002,oas:591.6},
+    {c:"Other",exp:0.1346,ytw:8.1,dur:0.02}
+  ],
+  capstack: [
+    {s:"Secured",exp:0.5027,ytw:8.87,dur:0.020},
+    {s:"Jr Subordinated (AT1)",exp:0.1956,ytw:6.43,dur:0.038,oas:350.1},
+    {s:"Sr Unsecured",exp:0.1096,ytw:4.46,dur:0.038},
+    {s:"Unsecured",exp:0.0390,ytw:2.08,dur:0.007,oas:12.9},
+    {s:"Subordinated (T2)",exp:0.0258,ytw:5.59,dur:0.008,oas:273.8},
+    {s:"1st Lien",exp:0.0131,ytw:31.37,dur:0.020,oas:1508.6},
+    {s:"Sr Non Preferred",exp:0.0081,ytw:3.67,dur:0.056,oas:135.9}
+  ],
+  rating: [
+    {r:"BBB",exp:0.0890},{r:"BBB-",exp:0.0425},{r:"BB+",exp:0.0250},
+    {r:"BB",exp:0.0817},{r:"BB-",exp:0.0504},{r:"B+",exp:0.0750},
+    {r:"B",exp:0.2703},{r:"B-",exp:0.045},{r:"NR",exp:0.22},{r:"A",exp:0.0135},{r:"BBB+",exp:0.0195}
+  ],
+  top_performers: [
+    {isin:"DE000A283WZ3",sec:"ams-OSRAM AG Conv. 2027",diff:-4.041},
+    {isin:"XS3023943692",sec:"Viridien S.A. 2030",diff:-2.383},
+    {isin:"XS0413650218",sec:"Mitsubishi UFJ FLR 2050",diff:-2.184},
+    {isin:"USL626A6AA24",sec:"MC Brazil Downstream 2031",diff:-1.911},
+    {isin:"XS3107119003",sec:"Maxam Prill 2030",diff:-1.323},
+    {isin:"NO0013684662",sec:"Arles I B.V. 2030",diff:-1.246},
+    {isin:"XS3168182692",sec:"Ferrovial SE Exch. 2031",diff:-1.070}
+  ],
+  bottom_performers: [
+    {isin:"XS1814546013",sec:"Tele Columbus AG 2029",diff:7.812},
+    {isin:"USG05891AL32",sec:"Aston Martin Capital 2029",diff:5.546},
+    {isin:"XS2762276967",sec:"INEOS Finance 2029",diff:4.014},
+    {isin:"XS3183180937",sec:"888 Acquisitions 2031",diff:2.590},
+    {isin:"FR0013533999",sec:"Crédit Agricole AT1",diff:2.063},
+    {isin:"DE000CZ45WA7",sec:"Commerzbank AT1 2027",diff:1.796},
+    {isin:"XS2389116307",sec:"Banco de Sabadell AT1",diff:1.648}
+  ],
+  best5d: [
+    {sec:"Mobico Group PLC MTN 2031",chg:4.33,contrib:0.0009},
+    {sec:"BOS GmbH FLR Notes 2029",chg:1.19,contrib:0.00009},
+    {sec:"Banco GNB Sudameris 2031",chg:0.247,contrib:0.000026}
+  ],
+  worst5d: [
+    {sec:"Tele Columbus AG 2029",chg:-3.8,contrib:-0.0005},
+    {sec:"Aston Martin Capital 2029",chg:-2.9,contrib:-0.00033},
+    {sec:"888 Acquisitions 2031",chg:-2.1,contrib:-0.00046},
+    {sec:"INEOS Finance 2029",chg:-1.8,contrib:-0.0004}
+  ]
+};
+
+// ── HELPERS ──
+const fmt = {
+  pct: v => v == null ? '—' : (v >= 0 ? '+' : '') + v.toFixed(2) + '%',
+  pctRaw: v => v == null ? '—' : (v*100).toFixed(2) + '%',
+  pctSign: v => v == null ? '—' : (v >= 0 ? '+' : '') + (v*100).toFixed(2) + '%',
+  ccy: v => v == null ? '—' : (v >= 0 ? '+' : '−') + '€' + Math.abs(v).toLocaleString('de-CH', {maximumFractionDigits:0}),
+  bp: v => v == null ? '—' : Math.round(v) + 'bp',
+  n2: v => v == null ? '—' : v.toFixed(2),
+  nav: v => '€' + (v/1e6).toFixed(2) + 'M',
+};
+const cl = v => v > 0 ? 'gc' : v < 0 ? 'rc' : 'cc';
+const clSign = v => v >= 0 ? 'gc' : 'rc';
+
+function capTag(cs) {
+  if (!cs) return '';
+  if (cs.includes('Additional Tier 1') || cs.includes('Jr Sub')) return '<span class="tag at1">AT1</span>';
+  if (cs.includes('Tier 2') || cs.includes('Subordinated') && !cs.includes('Jr')) return '<span class="tag t2">T2</span>';
+  if (cs.includes('SNP') || cs.includes('Non Preferred')) return '<span class="tag snp">SNP</span>';
+  if (cs.includes('Sr Unsecured')) return '<span class="tag sru">SR UNSEC</span>';
+  if (cs.includes('Secured') || cs.includes('lien')) return '<span class="tag sec">SECURED</span>';
+  if (cs.includes('Unsecured')) return '<span class="tag sru">UNSEC</span>';
+  return `<span class="tag sec">${cs.substring(0,8)}</span>`;
+}
+
+function capTagStack(s) {
+  if (s.includes('AT1') || s.includes('Jr Sub')) return '<span class="tag at1">AT1</span>';
+  if (s.includes('T2') || s.includes('Sub')) return '<span class="tag t2">T2</span>';
+  if (s.includes('1st')) return '<span class="tag corp">1L</span>';
+  return '<span class="tag sec">SEC</span>';
+}
+
+// ── AUTH ──
+document.getElementById('pwd').addEventListener('keydown', e => { if(e.key==='Enter') login(); });
+function login() {
+  const v = document.getElementById('pwd').value;
+  if (v === 'alpinum' || v === '1234') {
+    document.getElementById('ls').style.display = 'none';
+    document.getElementById('db').style.display = 'block';
+    init();
+  } else {
+    document.getElementById('err').textContent = 'ACCESS DENIED';
+    document.getElementById('pwd').value = '';
+    setTimeout(() => document.getElementById('err').textContent = '', 2000);
+  }
+}
+function logout() {
+  document.getElementById('db').style.display = 'none';
+  document.getElementById('ls').style.display = 'flex';
+  document.getElementById('pwd').value = '';
+}
+
+// ── CLOCK ──
+function startClock() {
+  const tick = () => {
+    const n = new Date();
+    document.getElementById('clk').textContent =
+      [n.getHours(),n.getMinutes(),n.getSeconds()].map(x=>String(x).padStart(2,'0')).join(':') + ' CET';
+  };
+  tick(); setInterval(tick, 1000);
+}
+
+// ── TABS ──
+function tab(id, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('on'));
+  document.querySelectorAll('.nt').forEach(n => n.classList.remove('on'));
+  document.getElementById('p-'+id).classList.add('on');
+  el.classList.add('on');
+}
+
+// ── BUILD OVERVIEW ──
+function buildOverview() {
+  const totalPnl = D.holdings.reduce((s,h) => s + (h.pnl||0), 0);
+  const totalNav = D.nav;
+
+  // KPI strip
+  const t2perf = D.perf['22F8T2'];
+  document.getElementById('kstrip').innerHTML = `
+    <div class="kc"><div class="kl">Total NAV</div><div class="kv cc">${fmt.nav(totalNav)}</div><div class="ks">Sleeve A · ${D.valDate}</div></div>
+    <div class="kc"><div class="kl">Total P&L</div><div class="kv ${clSign(totalPnl)}">${fmt.ccy(totalPnl)}</div><div class="ks">vs acquisition</div></div>
+    <div class="kc"><div class="kl">Daily Return</div><div class="kv ${clSign(t2perf.Daily)}">${(t2perf.Daily*100).toFixed(3)}%</div><div class="ks">Fund 22F8T2</div></div>
+    <div class="kc"><div class="kl">MTD Return</div><div class="kv ${clSign(t2perf.MTD)}">${fmt.pctSign(t2perf.MTD)}</div><div class="ks">month-to-date</div></div>
+    <div class="kc"><div class="kl">YTD Return</div><div class="kv ${clSign(t2perf.YTD)}">${fmt.pctSign(t2perf.YTD)}</div><div class="ks">year-to-date</div></div>
+    <div class="kc"><div class="kl">Holdings</div><div class="kv cc">${D.holdings.length}</div><div class="ks">Fund Rating: ${D.risk['Fund Rating']}</div></div>`;
+  document.getElementById('valdate').textContent = `Valuation date: ${D.valDate} · Data: Universal Admin via Bloomberg`;
+
+  // Top/Bot P&L
+  const sorted = [...D.holdings].sort((a,b) => (b.pnl||0)-(a.pnl||0));
+  const secTag = h => h.sector1.includes('Financial') ? '<span class="tag fin">FIN</span>' : '<span class="tag corp">CORP</span>';
+  const pnlRow = (h,i) => `<tr>
+    <td class="rk">${i+1}</td>
+    <td><div class="isrname">${h.issuer}</div><div class="isrsub">${h.isin}</div></td>
+    <td>${secTag(h)}</td>
+    <td class="mono r ${clSign(h.pnl)}">${fmt.ccy(h.pnl)}</td>
+    <td class="mono r">${(h.weight||0).toFixed(2)}%</td>
+  </tr>`;
+  document.getElementById('top-pnl').innerHTML = sorted.slice(0,7).map(pnlRow).join('');
+  document.getElementById('bot-pnl').innerHTML = [...sorted].reverse().slice(0,7).map(pnlRow).join('');
+
+  // Country breakdown
+  const maxC = Math.max(...D.country.map(c=>c.exp));
+  document.getElementById('country-brk').innerHTML = D.country.map(c => `
+    <div class="bi">
+      <div class="bn">${c.c}</div>
+      <div class="bbar"><div class="bfill" style="width:${(c.exp/maxC*100).toFixed(0)}%;background:linear-gradient(90deg,var(--purple),var(--cyan))"></div></div>
+      <div class="bpct cc">${(c.exp*100).toFixed(1)}%</div>
+    </div>`).join('');
+
+  // Capstack
+  const maxS = Math.max(...D.capstack.map(c=>c.exp));
+  document.getElementById('capstack-brk').innerHTML = D.capstack.map(c => `
+    <div class="bi">
+      <div class="bn">${c.s}</div>
+      <div class="bbar"><div class="bfill" style="width:${(c.exp/maxS*100).toFixed(0)}%;background:linear-gradient(90deg,var(--amber),var(--green))"></div></div>
+      <div class="bpct ac">${(c.exp*100).toFixed(1)}%</div>
+    </div>`).join('');
+
+  // Yield movers
+  document.getElementById('top-yield').innerHTML = D.top_performers.map((p,i) => `<tr>
+    <td class="rk">${i+1}</td>
+    <td><div class="isrname" style="font-size:11px">${p.sec}</div></td>
+    <td class="mono r gc">${p.diff.toFixed(2)}%</td>
+  </tr>`).join('');
+  document.getElementById('bot-yield').innerHTML = D.bottom_performers.map((p,i) => `<tr>
+    <td class="rk">${i+1}</td>
+    <td><div class="isrname" style="font-size:11px">${p.sec}</div></td>
+    <td class="mono r rc">+${p.diff.toFixed(2)}%</td>
+  </tr>`).join('');
+}
+
+// ── HOLDINGS TABLE ──
+let filteredHoldings = [];
+function buildHoldings() {
+  filteredHoldings = [...D.holdings];
+  document.getElementById('h-count').textContent = D.holdings.length + ' POSITIONS';
+  renderHoldings();
+}
+function renderHoldings() {
+  document.getElementById('h-body').innerHTML = filteredHoldings.map((h,i) => `<tr>
+    <td class="rk">${i+1}</td>
+    <td><div class="isrname">${h.issuer}</div><div class="isrsub">${h.security.substring(0,40)}${h.security.length>40?'…':''}</div></td>
+    <td class="mono" style="font-size:10px;color:var(--muted2)">${h.isin}</td>
+    <td class="mono r">${(h.weight||0).toFixed(2)}%</td>
+    <td class="mono r">${h.market_value ? '€'+(h.market_value/1e3).toFixed(0)+'K' : '—'}</td>
+    <td>${capTag(h.capstack_basel || h.capstack)}</td>
+    <td style="font-size:11px">${h.country}</td>
+    <td class="mono" style="font-size:11px">${h.rating||'NR'}</td>
+    <td class="mono r">${h.ytw != null ? h.ytw.toFixed(2)+'%' : '—'}</td>
+    <td class="mono r ${h.ytw_chg_1d!=null ? cl(h.ytw_chg_1d) : ''}">${h.ytw_chg_1d!=null ? fmt.pct(h.ytw_chg_1d) : '—'}</td>
+    <td class="mono r ${h.ytw_chg_1m!=null ? cl(h.ytw_chg_1m) : ''}">${h.ytw_chg_1m!=null ? fmt.pct(h.ytw_chg_1m) : '—'}</td>
+    <td class="mono r">${h.mod_dur != null ? h.mod_dur.toFixed(2)+'yr' : '—'}</td>
+    <td class="mono r">${h.oas != null ? Math.round(h.oas)+'bp' : '—'}</td>
+    <td class="mono r ${clSign(h.pnl)}">${fmt.ccy(h.pnl)}</td>
+  </tr>`).join('');
+}
+function filterHoldings() {
+  const q = document.getElementById('srch').value.toLowerCase();
+  filteredHoldings = D.holdings.filter(h =>
+    h.issuer.toLowerCase().includes(q) ||
+    h.isin.toLowerCase().includes(q) ||
+    h.country.toLowerCase().includes(q) ||
+    h.sector3.toLowerCase().includes(q) ||
+    h.capstack.toLowerCase().includes(q)
+  );
+  renderHoldings();
+}
+
+// ── PERFORMANCE ──
+function buildPerf() {
+  const t2 = D.perf['22F8T2'];
+  document.getElementById('perf-strip').innerHTML = `
+    <div class="kc"><div class="kl">Daily</div><div class="kv ${clSign(t2.Daily)}">${(t2.Daily*100).toFixed(3)}%</div><div class="ks">22F8T2 composite</div></div>
+    <div class="kc"><div class="kl">MTD</div><div class="kv ${clSign(t2.MTD)}">${fmt.pctSign(t2.MTD)}</div><div class="ks"></div></div>
+    <div class="kc"><div class="kl">3 Month</div><div class="kv ${clSign(t2['3M'])}">${fmt.pctSign(t2['3M'])}</div><div class="ks"></div></div>
+    <div class="kc"><div class="kl">6 Month</div><div class="kv ${clSign(t2['6M'])}">${fmt.pctSign(t2['6M'])}</div><div class="ks"></div></div>
+    <div class="kc"><div class="kl">9 Month</div><div class="kv ${clSign(t2['9M'])}">${fmt.pctSign(t2['9M'])}</div><div class="ks"></div></div>
+    <div class="kc"><div class="kl">YTD</div><div class="kv ${clSign(t2.YTD)}">${fmt.pctSign(t2.YTD)}</div><div class="ks"></div></div>`;
+
+  document.getElementById('perf-body').innerHTML = Object.entries(D.perf).map(([fn,p]) => `<tr>
+    <td class="mono">${fn}</td>
+    <td class="mono r ${clSign(p.Daily)}">${(p.Daily*100).toFixed(3)}%</td>
+    <td class="mono r ${clSign(p.MTD)}">${fmt.pctSign(p.MTD)}</td>
+    <td class="mono r ${clSign(p['3M'])}">${fmt.pctSign(p['3M'])}</td>
+    <td class="mono r ${clSign(p['6M'])}">${fmt.pctSign(p['6M'])}</td>
+    <td class="mono r ${clSign(p['9M'])}">${fmt.pctSign(p['9M'])}</td>
+    <td class="mono r ${clSign(p.YTD)}">${fmt.pctSign(p.YTD)}</td>
+  </tr>`).join('');
+
+  document.getElementById('best5d').innerHTML = D.best5d.map((r,i) => `<tr>
+    <td class="rk">${i+1}</td>
+    <td style="font-size:11px">${r.sec}</td>
+    <td class="mono r gc">+${r.chg.toFixed(3)}%</td>
+    <td class="mono r gc">+${(r.contrib*100).toFixed(4)}%</td>
+  </tr>`).join('');
+
+  document.getElementById('worst5d').innerHTML = D.worst5d.map((r,i) => `<tr>
+    <td class="rk">${i+1}</td>
+    <td style="font-size:11px">${r.sec}</td>
+    <td class="mono r rc">${r.chg.toFixed(3)}%</td>
+    <td class="mono r rc">${(r.contrib*100).toFixed(4)}%</td>
+  </tr>`).join('');
+}
+
+// ── RISK ──
+function buildRisk() {
+  const r = D.risk;
+  document.getElementById('risk-strip').innerHTML = `
+    <div class="kc"><div class="kl">Avg Ref Yield</div><div class="kv cc">${(r['Weighted Avg Ref Yield (%)']*100).toFixed(2)}%</div><div class="ks">weighted avg</div></div>
+    <div class="kc"><div class="kl">Avg Mod Duration</div><div class="kv ac">${r['Weighted Avg Mod. Duration (yrs)'].toFixed(2)} yrs</div><div class="ks"></div></div>
+    <div class="kc"><div class="kl">Avg Spread Dur</div><div class="kv ac">${r['Weighted Avg Spread Dur. (yrs)'].toFixed(2)} yrs</div><div class="ks"></div></div>
+    <div class="kc"><div class="kl">Avg OAS</div><div class="kv cc">${r['Weighted Avg OAS (bps)'].toFixed(0)} bp</div><div class="ks"></div></div>
+    <div class="kc"><div class="kl">Avg Coupon</div><div class="kv pc">${(r['Weighted Avg Coupon (pct)']*100).toFixed(2)}%</div><div class="ks"></div></div>
+    <div class="kc"><div class="kl">Fund Rating</div><div class="kv ac">${r['Fund Rating']}</div><div class="ks">Avg Mat: ${r['Weighted Avg Maturity (yrs)'].toFixed(1)} yrs</div></div>`;
+
+  const maxR = Math.max(...D.rating.map(x=>x.exp));
+  document.getElementById('rating-brk').innerHTML = D.rating.sort((a,b)=>b.exp-a.exp).map(x => `
+    <div class="bi">
+      <div class="bn" style="font-family:var(--mono);font-size:11px">${x.r}</div>
+      <div class="bbar"><div class="bfill" style="width:${(x.exp/maxR*100).toFixed(0)}%;background:linear-gradient(90deg,var(--cyan),var(--purple))"></div></div>
+      <div class="bpct cc">${(x.exp*100).toFixed(1)}%</div>
+    </div>`).join('');
+
+  document.getElementById('capstack-tbl').innerHTML = D.capstack.map(c => `<tr>
+    <td><div style="display:flex;align-items:center;gap:8px">${capTagStack(c.s)}<span style="font-size:12px">${c.s}</span></div></td>
+    <td class="mono r cc">${(c.exp*100).toFixed(1)}%</td>
+    <td class="mono r">${c.ytw.toFixed(2)}%</td>
+    <td class="mono r">${c.dur.toFixed(3)} yr</td>
+    <td class="mono r">${c.oas != null ? Math.round(c.oas)+'bp' : '—'}</td>
+  </tr>`).join('');
+
+  document.getElementById('country-tbl').innerHTML = D.country.map(c => `<tr>
+    <td style="font-size:12px">${c.c}</td>
+    <td class="mono r cc">${(c.exp*100).toFixed(1)}%</td>
+    <td class="mono r">${c.ytw.toFixed(2)}%</td>
+    <td class="mono r">${c.ytw.toFixed(2)}%</td>
+    <td class="mono r">${(c.dur*100).toFixed(2)} yr</td>
+    <td class="mono r">${c.oas != null ? Math.round(c.oas)+'bp' : '—'}</td>
+  </tr>`).join('');
+}
+
+// ── SIZER ──
+function buildSizerCtx() {
+  const r = D.risk;
+  const totalPnl = D.holdings.reduce((s,h) => s + (h.pnl||0), 0);
+  const totalDV01 = D.holdings.reduce((s,h) => {
+    const mv = h.market_value || 0;
+    const dur = h.mod_dur || 0;
+    return s + mv * dur / 100 / 100;
+  }, 0);
+  document.getElementById('sizer-ctx').innerHTML = `
+    <div class="kc"><div class="kl">NAV</div><div class="kv cc">${fmt.nav(D.nav)}</div><div class="ks">Sleeve A</div></div>
+    <div class="kc"><div class="kl">Total P&L</div><div class="kv ${clSign(totalPnl)}">${fmt.ccy(totalPnl)}</div><div class="ks">vs acquisition</div></div>
+    <div class="kc"><div class="kl">Avg Duration</div><div class="kv ac">${r['Weighted Avg Mod. Duration (yrs)'].toFixed(2)} yrs</div><div class="ks">mod duration</div></div>
+    <div class="kc"><div class="kl">Avg OAS</div><div class="kv cc">${r['Weighted Avg OAS (bps)'].toFixed(0)} bp</div><div class="ks"></div></div>
+    <div class="kc"><div class="kl">Port DV01</div><div class="kv ac">€${Math.round(totalDV01).toLocaleString()}</div><div class="ks">per 1bp</div></div>
+    <div class="kc"><div class="kl">Holdings</div><div class="kv cc">${D.holdings.length}</div><div class="ks">positions</div></div>`;
+}
+
+function runSizer() {
+  const notional = parseFloat(document.getElementById('sz-n').value) * 1e6 || 0;
+  const price = parseFloat(document.getElementById('sz-p').value) / 100 || 1;
+  const coupon = parseFloat(document.getElementById('sz-c').value) / 100 || 0;
+  const mat = parseFloat(document.getElementById('sz-m').value) || 0;
+  const oas = parseFloat(document.getElementById('sz-oas').value) || 0;
+  const ytw = parseFloat(document.getElementById('sz-ytw').value) / 100 || coupon + oas/10000;
+  if (!notional || !mat) { return; }
+
+  const cashCost = notional * price;
+  const modDur = mat * 0.85; // simplified; you'd use BBG value in reality
+  const dv01 = cashCost * modDur / 10000;
+  const annualCarry = notional * coupon;
+  const pctNav = (notional / D.nav) * 100;
+  const portDV01 = D.holdings.reduce((s,h) => s + (h.market_value||0)*(h.mod_dur||0)/100/100, 0);
+  const dv01Pct = portDV01 > 0 ? (dv01 / portDV01 * 100) : 0;
+
+  const limitOk = pctNav > 5 ? '⚠ CHECK LIMIT' : pctNav > 3 ? '⚡ LARGE' : '✓ OK';
+  const limitColor = pctNav > 5 ? 'var(--red)' : pctNav > 3 ? 'var(--amber)' : 'var(--green)';
+
+  const results = [
+    {l:'Cash Cost',v:`€${(cashCost/1e6).toFixed(2)}M`,s:'at clean price',c:'var(--cyan)'},
+    {l:'Modified Duration',v:`~${modDur.toFixed(1)} yrs`,s:'approx (use BBG for exact)',c:'var(--text)'},
+    {l:'DV01 (€)',v:`€${Math.round(dv01).toLocaleString()}`,s:'per 1bp parallel shift',c:'var(--amber)'},
+    {l:'DV01 vs Port',v:`${dv01Pct.toFixed(1)}%`,s:'of current sleeve DV01',c:'var(--amber)'},
+    {l:'Annual Carry',v:`€${Math.round(annualCarry/1e3)}K`,s:`€${Math.round(annualCarry/12/1e3)}K/mo · €${Math.round(annualCarry/252/1e3)}K/day`,c:'var(--green)'},
+    {l:'% of NAV',v:`${pctNav.toFixed(2)}%`,s:limitOk,c:limitColor},
+    {l:'OAS / Z-Spread',v:`${oas}bp`,s:`YTW: ${(ytw*100).toFixed(2)}%`,c:'var(--purple)'},
+    {l:'New Position Count',v:`${D.holdings.length + 1}`,s:'if new line added',c:'var(--cyan)'},
+  ];
+
+  document.getElementById('sz-res').innerHTML = results.map(r => `
+    <div class="sz-result">
+      <div class="sz-rl">${r.l}</div>
+      <div class="sz-rv" style="color:${r.c}">${r.v}</div>
+      <div class="sz-rs">${r.s}</div>
+    </div>`).join('');
+}
+function clearSizer() {
+  ['sz-iss','sz-n','sz-p','sz-c','sz-m','sz-oas','sz-ytw'].forEach(id => document.getElementById(id).value='');
+  document.getElementById('sz-res').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px 0;font-family:var(--mono);font-size:11px;color:var(--muted2);letter-spacing:.15em">ENTER BOND DETAILS TO ANALYZE</div>';
+}
+
+// ── INIT ──
+function init() {
+  startClock();
+  buildOverview();
+  buildHoldings();
+  buildPerf();
+  buildRisk();
+  buildSizerCtx();
+}
+</script>
+</body>
+</html>
